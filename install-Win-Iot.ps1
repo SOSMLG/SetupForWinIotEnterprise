@@ -678,8 +678,8 @@ if ((-not $NoTweaks) -and (Should-Run 'tweaks')) {
     try {
       $sysType = (Get-CimInstance Win32_ComputerSystem -EA Stop).PCSystemType
       if ($sysType) { $isLaptop = ([int]$sysType -eq 2) }
-      else { $isLaptop = @(Get-CimInstance Win32-Battery -EA Stop).Count -gt 0 }
-    } catch { try { $isLaptop = @(Get-CimInstance Win32-Battery -EA Stop).Count -gt 0 } catch {} }
+      else { $isLaptop = @(Get-CimInstance Win32_Battery -EA Stop).Count -gt 0 }
+    } catch { try { $isLaptop = @(Get-CimInstance Win32_Battery -EA Stop).Count -gt 0 } catch {} }
     if ($isLaptop) {
       if ($DryRun) { Log '  [dry-run] would keep the balanced power plan (laptop here).' }
       else {
@@ -1672,9 +1672,6 @@ if (Get-Command pwsh -EA SilentlyContinue) {
 Copy-Config (Join-Path $Repo 'Komorebi\komorebi.json') (Join-Path $env:USERPROFILE 'komorebi.json')
 Copy-Config (Join-Path $Repo 'Komorebi\whkdrc') (Join-Path $env:USERPROFILE '.config\whkd\whkdrc')
 
-# git defaults. identity stays blank, that's yours to fill in after install.
-Copy-Config (Join-Path $Repo 'Git\.gitconfig') (Join-Path $env:USERPROFILE '.gitconfig')
-
 # extensions live in extensions.txt next to the script. edit that file, not this one.
 $codium = Get-CmdPath 'codium'
 if (-not $codium) {
@@ -1756,6 +1753,9 @@ Copy-Fresh (Join-Path $Repo 'Vesktop\settings.json') (Join-Path $env:APPDATA 'Ve
 Copy-Fresh (Join-Path $Repo 'qBittorrent\qbittorrent.ini') (Join-Path $env:APPDATA 'qBittorrent\qbittorrent.ini')
 Copy-Fresh (Join-Path $Repo 'VLC\vlcrc') (Join-Path $env:APPDATA 'vlc\vlcrc')
 Copy-Fresh (Join-Path $Repo 'OBS\profiles\Recording\basic.ini') (Join-Path $env:APPDATA 'obs-studio\basic\profiles\Recording\basic.ini')
+# git defaults. fresh-only on purpose: identity is blank in the repo copy, so an overwrite
+# on re-run would wipe the name/email you set. (needs Copy-Fresh, so it lives down here.)
+Copy-Fresh (Join-Path $Repo 'Git\.gitconfig') (Join-Path $env:USERPROFILE '.gitconfig')
 # quickcss ships as a placeholder, so an untouched one upgrades to the real
 # darkmatter theme on re-run. a quickcss you edited yourself is kept.
 $qcss = Join-Path $env:APPDATA 'Vesktop\settings\quickcss.css'
@@ -1970,9 +1970,13 @@ if (-not $NoTweaks) {
       Remove-Item -Force -EA SilentlyContinue
   } catch {}
   if ($isAdmin) {
-    # hibernate off (frees hiberfil.sys - matters on small tiny10 disks)
-    $exit = Invoke-Native { powercfg /hibernate off }
-    if ($exit -eq 0) { Log '  hibernation off.' } else { Log "  WARN hibernate exit=$exit" }
+    # hibernate off (frees hiberfil.sys - matters on small tiny10 disks). it also kills fast startup,
+    # so -KeepFastStartup skips it. before this the switch only logged and hibernate went off anyway.
+    if ($KeepFastStartup) { Log '  hibernate left alone (-KeepFastStartup).' }
+    else {
+      $exit = Invoke-Native { powercfg /hibernate off }
+      if ($exit -eq 0) { Log '  hibernation off.' } else { Log "  WARN hibernate exit=$exit" }
+    }
     # disk cleanup, no prompts (may be stripped on tiny10 -> warn only)
     try { Start-Process cleanmgr -ArgumentList '/VERYLOWDISK' -Wait -EA Stop; Log '  disk cleanup done.' }
     catch { Log '  WARN disk cleanup: cleanmgr missing (common on tiny10).' }

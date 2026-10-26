@@ -28,7 +28,7 @@ quickcss, shell pack, battery manners).
 - Voice: comments and logs read like one tired human. Short, lowercase
   asides, no em-dashes, no buzzwords, no triplets. Never "improve" wording
   in a way that touches logic. Run the tests after every edit:
-  `powershell -File tests\run-all.ps1` (syntax, json, module smoke,
+  `powershell -File tests\run-all.ps1` (syntax, json, static, module smoke,
   installer smoke; PSScriptAnalyzer reported when installed).
 - New switches stay additive: `-DryRun`, `-Verify`, `-Only`, `-SkipApps`
   all default off and guard every write site. When adding a write, add a
@@ -61,7 +61,8 @@ quickcss, shell pack, battery manners).
   (`Copy-Fresh`), never overwrite a lived-in config.
 - `Setup.cmd` at the root: one-click, self-elevating wrapper. runs the
   installer with `-Unattended -IncludeStudy`, extra flags pass through.
-- `OOSU/` bundles O&O ShutUp10++ + titus cfg (85MB, checksum-verified).
+- `OOSU/` holds the titus cfg. `OOSHUTUP10.exe` (85MB) is not committed to github. drop it in
+  locally or the installer logs a skip and runs without O&O.
   Runs `/quiet` before our reg values so ours win overlaps.
 - `ISO/`: FirstLogon.cmd, Get-Offline.ps1 (keep its ID list in sync with
   the installer's), Offline/ cache (gitignored), build/ working copy
@@ -71,3 +72,17 @@ quickcss, shell pack, battery manners).
   for ventoy (which skips $OEM$); rufus path stays live via $OEM$.
 - `.gitignore` excludes `*.iso`, `ISO/build/`, `ISO/Offline/`. No secrets
   in the tree: blank passwords, empty API keys.
+
+## Agent workflow
+- Read the folder README before touching an app config. Most have a 2-minute note that matters.
+- Small diffs. One concern per change. Don't reformat files you aren't editing.
+- Before saying done: `/precheck`, then `powershell -File tests\run-all.ps1`. Report what actually ran.
+- If the tests can't run here (not on Windows, missing module), say so. Don't claim they passed.
+- Don't commit, push or delete unless asked. `/commit` drafts the message, the human runs it.
+- Don't touch the pins in `config/hashes.json`, or anything under `ISO/Offline/` or `ISO/build/`.
+- `Copy-Config` overwrites, `Copy-Fresh` keeps. pick on purpose. anything with a blank
+  identity or a user's own edits is fresh-only (that is why `.gitconfig` is).
+- A script-level call must sit below the function it calls. `tests/static-check.ps1` enforces it.
+- WMI class names use underscores (`Win32_Battery`). the hyphen version threw and a catch hid it.
+- Keep scripts ascii. PS 5.1 reads bom-less utf-8 as ANSI.
+- When a rule here and a guess disagree, the rule wins. If the rule looks wrong, ask.

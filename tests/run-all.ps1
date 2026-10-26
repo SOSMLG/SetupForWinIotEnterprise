@@ -2,7 +2,7 @@ Set-StrictMode -Version 2
 $ErrorActionPreference = 'Continue'
 $root = Split-Path $PSScriptRoot -Parent
 
-$tests = @('syntax-check.ps1', 'json-check.ps1', 'module-smoke.ps1', 'installer-smoke.ps1')
+$tests = @('syntax-check.ps1', 'json-check.ps1', 'static-check.ps1', 'module-smoke.ps1', 'installer-smoke.ps1')
 $failed = @()
 foreach ($t in $tests) {
   $path = Join-Path $PSScriptRoot $t

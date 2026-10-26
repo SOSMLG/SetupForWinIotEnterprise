@@ -1,0 +1,67 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "share": "disabled",
+  "permission": {
+    "edit": "allow",
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git add*": "allow",
+      "powershell*tests*run-all.ps1*": "allow",
+      "git commit*": "ask",
+      "git push*": "ask",
+      "git checkout*": "ask",
+      "git reset --hard*": "deny",
+      "git clean*": "deny",
+      "git push*--force*": "deny",
+      "Remove-Item*": "ask",
+      "del *": "ask",
+      "rm *": "ask",
+      "format*": "deny"
+    }
+  },
+  "agent": {
+    "review": {
+      "description": "read-only reviewer for this repo. checks a diff against AGENTS.md rules.",
+      "mode": "subagent",
+      "prompt": "You review diffs for this repo. Read AGENTS.md first and judge the diff against its rules. Report only real problems: missing $LASTEXITCODE checks, writes without a dry-run log line, Komorebi schema keys, autounattend.xml parity with ventoy/script/Win-Iot-unattended.xml, Get-Offline.ps1 id list drifting from the installer, PS 5.1 incompatibilities, changes that overwrite a lived-in config. Give file and line, one sentence each. If it looks fine, say so. Never edit files.",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    }
+  },
+  "command": {
+    "test": {
+      "description": "run the repo tests and summarize failures",
+      "template": "Run `powershell -NoProfile -ExecutionPolicy Bypass -File tests\\run-all.ps1`. Report pass/fail per stage in a few lines. If something fails, show the first error and the likely cause. Do not fix anything unless I ask."
+    },
+    "review": {
+      "description": "review uncommitted changes against AGENTS.md",
+      "agent": "review",
+      "subtask": true,
+      "template": "Review my uncommitted changes. Use `git diff` and `git diff --staged`. $ARGUMENTS"
+    },
+    "precheck": {
+      "description": "pre-commit checklist from AGENTS.md",
+      "template": "Look at `git diff --staged` (or `git diff` if nothing is staged). Check: every new write has a dry-run log line, native exes are followed by a $LASTEXITCODE check, ISO/autounattend.xml and ventoy/script/Win-Iot-unattended.xml still match, Get-Offline.ps1 ids still match the installer, nothing is PS 7 only. Then run tests\\run-all.ps1. Give a short pass/fail list. $ARGUMENTS"
+    },
+    "commit": {
+      "description": "draft a commit message from the staged diff (does not commit)",
+      "template": "Read `git diff --staged`. Write one commit message: short imperative subject under 60 chars, lowercase, no em-dashes, then at most 3 plain lines of why if needed. Print it. Do not run git commit."
+    },
+    "dryrun": {
+      "description": "installer dry run, then read the plan back",
+      "template": "Run `powershell -NoProfile -ExecutionPolicy Bypass -File install-Win-Iot.ps1 -DryRun $ARGUMENTS`. Then read the newest report json and the log tail and summarize what it would do, what it skipped, and any warnings. Nothing should be written outside the log and report."
+    }
+  }
+}
