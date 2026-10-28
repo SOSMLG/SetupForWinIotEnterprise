@@ -1,16 +1,196 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [],
+  "autoupdate": "notify",
+  "share": "disabled",
+  "snapshot": true,
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".git/**",
+      "dist/**",
+      "build/**",
+      "out/**",
+      "ISO/Offline/**",
+      "ISO/build/**",
+      "**/*.iso",
+      "**/*.mp4",
+      "**/*.mov",
+      "**/*.mkv",
+      "**/*.wav"
+    ]
+  },
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      "**/*.pem": "deny",
+      "**/id_rsa*": "deny",
+      "**/id_ed25519*": "deny"
+    },
+    "edit": "allow",
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git add*": "allow",
+      "git commit*": "ask",
+      "git push*": "ask",
+      "git checkout*": "ask",
+      "git switch*": "ask",
+      "git merge*": "ask",
+      "git rebase*": "ask",
+      "git reset --hard*": "deny",
+      "git clean*": "deny",
+      "git push --force*": "deny",
+      "git push -f*": "deny",
+      "rm -rf*": "deny",
+      "Remove-Item*-Recurse*": "deny",
+      "rmdir /s*": "deny",
+      "del /s*": "deny",
+      "format*": "deny",
+      "diskpart*": "deny",
+      "shutdown*": "deny"
+    },
+    "webfetch": "ask",
+    "websearch": "ask",
+    "external_directory": "ask",
+    "doom_loop": "ask"
+  },
   "mcp": {
     "context7": {
       "type": "local",
-      "command": ["npx", "-y", "@upstash/context7-mcp"],
-      "enabled": true
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp@4.4.4"
+      ],
+      "enabled": true,
+      "timeout": 30000
     },
     "playwright": {
       "type": "local",
-      "command": ["npx", "-y", "@playwright/mcp"],
-      "enabled": true
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@0.0.83"
+      ],
+      "enabled": true,
+      "timeout": 30000
+    }
+  },
+  "tools": {
+    "context7_*": false,
+    "playwright_*": false
+  },
+  "agent": {
+    "lean": {
+      "description": "cheap and quick: tiny prompt, fewest tools. for small edits and questions",
+      "mode": "primary",
+      "color": "success",
+      "prompt": "You are a terse coding assistant on a Windows box. Read a file before editing it. Make the smallest change that works. Run the project's tests when they exist. Do not commit, push or delete unless asked. Keep replies short.",
+      "tools": {
+        "todowrite": false,
+        "webfetch": false,
+        "task": false,
+        "skill": false
+      }
+    },
+    "web": {
+      "description": "tests a site in a real browser with the playwright tools",
+      "mode": "primary",
+      "color": "info",
+      "prompt": "You test websites in a real browser with the playwright tools. Only touch localhost, staging or sites the user named. Never log in to real accounts or submit real forms. Report what you did, what you saw, and exact steps to reproduce any bug. Take a screenshot only when it helps.",
+      "tools": {
+        "playwright_*": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "lookup": {
+      "description": "looks up library and framework docs (context7). read-only",
+      "mode": "subagent",
+      "color": "accent",
+      "prompt": "You look up library and framework docs with the context7 tools. Answer with the exact API, a short example and the version it applies to. Say so if docs conflict or are missing. Do not edit files.",
+      "tools": {
+        "context7_*": true,
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    "docs": {
+      "description": "Word, PDF and LaTeX documents",
+      "mode": "primary",
+      "color": "warning",
+      "prompt": "You write Word, PDF and LaTeX documents. If no template or sample is attached, ask for one once. Prefer LaTeX or Typst for PDFs and pandoc for markdown to docx. After building, check that it compiled with no errors and name the output file. Edit the existing source, do not regenerate it. Plain language.",
+      "permission": {
+        "bash": {
+          "*": "ask",
+          "latexmk*": "allow",
+          "pdflatex*": "allow",
+          "xelatex*": "allow",
+          "typst*": "allow",
+          "pandoc*": "allow"
+        }
+      }
+    },
+    "video": {
+      "description": "video scripts, captions, ffmpeg and Remotion commands",
+      "mode": "primary",
+      "color": "secondary",
+      "prompt": "You plan and script videos and write ffmpeg and Remotion commands. Never overwrite a source file: write to a new name and pass -n to ffmpeg. Probe inputs with ffprobe first. Show the command and what it does before running it. Captions go in .srt. Keep scripts to the length given.",
+      "permission": {
+        "bash": {
+          "*": "ask",
+          "ffprobe*": "allow",
+          "ffmpeg -version*": "allow",
+          "ffmpeg -h*": "allow"
+        }
+      }
+    },
+    "review": {
+      "description": "read-only code review of the current diff",
+      "mode": "subagent",
+      "color": "error",
+      "prompt": "You review diffs. Read AGENTS.md first if it exists and judge the diff against it. Report only real problems with file and line, one sentence each. If it looks fine, say so. Never edit files.",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    }
+  },
+  "command": {
+    "commit": {
+      "description": "draft a commit message from the staged diff (does not commit)",
+      "template": "Read `git diff --staged`. Write one commit message: short imperative subject under 60 chars, lowercase, then at most 3 plain lines of why if needed. Print it. Do not run git commit."
+    },
+    "handoff": {
+      "description": "write HANDOFF.md so a fresh session can pick up cheaply",
+      "template": "Write HANDOFF.md in the repo root so a fresh session can continue this work. Sections: goal, done, left to do (ordered), files touched, commands to run, gotchas. Max 40 lines. No secrets. Then tell me to start a new session and attach it with @HANDOFF.md."
+    },
+    "rmslop": {
+      "description": "strip AI slop from the lines you added on this branch",
+      "template": "Look at `git diff`. In the lines added there only, remove: comments that restate the code, try/catch that hides errors, needless abstractions, and style that does not match the file. Change nothing else. Summarize in 3 lines."
+    },
+    "usage": {
+      "description": "where the tokens went in the last 7 days",
+      "template": "Here is my OpenCode usage:\n\n!`opencode stats --days 7`\n\nIn 5 lines: where the tokens went, and the single change that would cut the most."
+    },
+    "review": {
+      "description": "review uncommitted changes",
+      "agent": "review",
+      "subtask": true,
+      "template": "Review my uncommitted changes. Use `git diff` and `git diff --staged`. $ARGUMENTS"
     }
   }
 }

@@ -1765,6 +1765,15 @@ if (Test-Path $qcss) { $qcur = Get-Content $qcss -Raw -EA SilentlyContinue }
 if ((Test-QuickcssStale $qcur) -or $ConfigsOnly -or $Force) { Copy-Config $qsrc $qcss } else { Log "  keep existing: $qcss" }
 # opencode global config: curated MCP servers (context7, playwright). fresh-only.
 Copy-Fresh (Join-Path $Repo 'config\opencode.json') (Join-Path $env:USERPROFILE '.config\opencode\opencode.json')
+# opencode global rules and on-demand skills. fresh-only per file, so your own edits survive a re-run.
+Copy-Fresh (Join-Path $Repo 'config\AGENTS.global.md') (Join-Path $env:USERPROFILE '.config\opencode\AGENTS.md')
+$ocSkillSrc = Join-Path $Repo 'config\opencode-skills'
+if (Test-Path $ocSkillSrc) {
+  Get-ChildItem $ocSkillSrc -Recurse -File | ForEach-Object {
+    $rel = $_.FullName.Substring($ocSkillSrc.Length).TrimStart('\', '/')
+    Copy-Fresh $_.FullName (Join-Path $env:USERPROFILE ('.config\opencode\skills\' + $rel))
+  }
+}
 # study pack configs, fresh-only like the rest. -IncludeStudy territory.
 if ($IncludeStudy) {
   Copy-Fresh (Join-Path $Repo 'SumatraPDF\SumatraPDF-settings.txt') (Join-Path $env:LOCALAPPDATA 'SumatraPDF\SumatraPDF-settings.txt')

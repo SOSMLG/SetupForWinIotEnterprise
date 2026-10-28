@@ -32,7 +32,7 @@ powershell -ExecutionPolicy Bypass -File install-Win-Iot.ps1 -Verify   # read ba
 | editor | VSCodium with the darkmatter theme |
 | apps | Vesktop, Telegram, qBittorrent, VLC, OBS Studio |
 | automation-student basics | Git, Node.js LTS, Python 3.12, 7-Zip, Wireshark |
-| AI assistant | `opencode` CLI (`SST.opencode`), sidebar in VSCodium |
+| AI assistant | `opencode` CLI (`SST.opencode`), sidebar in VSCodium. tuned for token cost, see [docs/OPENCODE.md](docs/OPENCODE.md) |
 | panel | stock Windows taskbar, tuned with native settings |
 | runtimes (first) | VC++ 2005 to 2022, .NET 8 Desktop Runtime, .NET Framework 3.5 and DirectPlay features |
 | study pack, `-IncludeStudy` | Zotero, SumatraPDF, MiKTeX, Typst, Windows Terminal, plus their configs |
@@ -92,7 +92,7 @@ what the installer copies, and what happens on a re-run.
 | `Git/.gitconfig` | kept | main branch, autocrlf, codium editor, prune, aliases. identity left blank for you |
 | `Vesktop/settings.json`, `qBittorrent/`, `VLC/`, `OBS/` | kept | fresh-install only. each folder has a 2-minute README |
 | `Vesktop/quickcss.css` | kept if edited | ships the system24 darkmatter theme. an untouched placeholder is upgraded on re-run, one you edited is kept |
-| `config/opencode.json` | kept | context7 and playwright MCP servers |
+| `config/opencode.json`, `config/AGENTS.global.md`, `config/opencode-skills/` | kept | agents, commands, gated context7 and playwright MCP, global rules, 4 skills. an old `opencode.json` is not replaced, see docs/OPENCODE.md |
 | `SumatraPDF/`, `WindowsTerminal/` | kept | with `-IncludeStudy` |
 | `Helium/master_preferences` | kept | copied only if Helium has no profile data yet |
 

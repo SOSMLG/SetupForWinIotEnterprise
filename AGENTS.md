@@ -85,4 +85,6 @@ quickcss, shell pack, battery manners).
 - A script-level call must sit below the function it calls. `tests/static-check.ps1` enforces it.
 - WMI class names use underscores (`Win32_Battery`). the hyphen version threw and a catch hid it.
 - Keep scripts ascii. PS 5.1 reads bom-less utf-8 as ANSI.
+- OpenCode: never turn an MCP server on for every agent. gate it per agent (see docs/OPENCODE.md).
+  every enabled tool is sent on every message. measure with tools/token-audit/oc_token_audit.py.
 - When a rule here and a guess disagree, the rule wins. If the rule looks wrong, ask.

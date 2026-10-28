@@ -19,6 +19,7 @@ use a VM first.
   named `My Pc` with a **blank password** and log it in once automatically. Windows normally limits
   blank-password accounts to console logon, but set a password after first boot if the machine
   leaves the bench.
+- the OpenCode MCP servers are run with `npx -y` at **pinned versions** (see `config/opencode.json`). the first start downloads them from npm without a hash check. bump the pins on purpose.
 - no secrets live in the tree. passwords and API keys are blank.
 
 ## reporting a problem
